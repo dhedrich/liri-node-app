@@ -3,26 +3,34 @@ var keys = require('./keys.js')
 var Twitter = require("twitter")
 var Spotify = require("node-spotify-api")
 var request = require("request")
+var fs = require("fs")
 
 var spotify = new Spotify(keys.spotify)
 var client = new Twitter(keys.twitter)
 
 var command = process.argv[2]
+var arg
+if (process.argv[3]) {arg = process.argv[3]}
 
-switch (command) {
-    case 'my-tweets':
-        getTwitterData()
-        break
-    case 'spotify-this-song':
-        getSpotifyData(process.argv[3])
-        break
-    case 'movie-this':
-        getOMBDData(process.argv[3])
-        break
-    case 'do-what-it-says':
-        break
-    default:
-        console.log('invalid command.')
+executeCommand(command, arg)
+
+function executeCommand(command, arg) {
+    switch (command) {
+        case 'my-tweets':
+            getTwitterData()
+            break
+        case 'spotify-this-song':
+            getSpotifyData(arg)
+            break
+        case 'movie-this':
+            getOMBDData(arg)
+            break
+        case 'do-what-it-says':
+            doWhatItSays()
+            break
+        default:
+            console.log('invalid command.')
+    }
 }
 
 function getTwitterData() {
@@ -43,9 +51,9 @@ function getTwitterData() {
 }
 
 function getSpotifyData(song) {
-    spotify.search({ 
-        type: 'track', 
-        query: song 
+    spotify.search({
+        type: 'track',
+        query: song
     }, function (err, data) {
         if (err) {
             console.log('Error occurred: song "' + song + '" not found.')
@@ -87,5 +95,13 @@ function getOMBDData(movie) {
             console.log("               Actors | " + response.Actors)
             console.log('---------------------------------------------------------------------------')
         }
+    })
+}
+
+function doWhatItSays() {
+    fs.readFile('random.txt', 'utf8', function (err, data) {
+        if (err) throw err
+        var commandArr = data.split(',')
+        executeCommand(commandArr[0], commandArr[1])
     })
 }
